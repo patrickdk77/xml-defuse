@@ -1,0 +1,17 @@
+MIME-Version: 1.0
+Content-Type: multipart/related; boundary="b1"; start="<root@x>"
+
+--b1
+Content-Type: multipart/alternative; boundary="b2"
+
+--b2
+Content-Type: text/plain
+
+plain text
+--b2
+Content-Type: text/html
+Content-ID: <root@x>
+
+<p onclick="alert(1)">html</p>
+--b2--
+--b1--

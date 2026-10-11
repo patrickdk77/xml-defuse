@@ -1,0 +1,2 @@
+<?xml version="1.0"?>
+<items><item online="yes">one</item><script>alert(1)</script><img src="x.png" onerror="alert(2)"/><item onclick="alert(3)">two</item></items>

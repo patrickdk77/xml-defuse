@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<?xml-stylesheet title="href='a.css'" type="text/css" href="https://evil.example.net/x.css"?>
+<?xml-stylesheet a-href="b.css" type="text/css" href="https://evil.example.net/y.css"?>
+<?xml-stylesheet title="type='text/css'" type="text/xsl" href="view.xsl"?>
+<?xml-stylesheet type="text/css" href="&#x68;ttps://evil.example.net/z.css"?>
+<?xml-stylesheet type="text/css" href="site.css"?>
+<r>data</r>

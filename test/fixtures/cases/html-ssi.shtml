@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Case</title></head>
+<body>
+<!--#exec cmd="cat /etc/passwd" -->
+<!--#include virtual="/private/config.txt" -->
+<p>page</p>
+</body>
+</html>

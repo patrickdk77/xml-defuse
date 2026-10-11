@@ -1,0 +1,93 @@
+{
+  "name": "@patrickdk77/xml-defuse",
+  "version": "0.1.0",
+  "description": "Sanitize and clean HTML, XHTML, SVG, XML, XSLT and MHT files. Detects and removes scripts, event handlers, javascript: links, external entities and DTDs, XInclude, XSLT extension functions, frames, objects, forms, meta refresh and CSS that runs or loads, scores the risk, and writes a disarmed copy with no runtime dependencies.",
+  "license": "MIT",
+  "author": "patrickdk77",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "xml-defuse": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true});require('fs').rmSync('build-test',{recursive:true,force:true})\"",
+    "build": "tsc -p tsconfig.json && node scripts/write-esm-wrapper.js",
+    "build:test": "tsc -p tsconfig.test.json",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "test": "npm run lint && npm run build && npm run build:test && mocha --timeout 120000 \"build-test/test/**/*.test.js\"",
+    "prepare": "husky || true",
+    "prepublishOnly": "npm run clean && npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/patrickdk77/xml-defuse.git"
+  },
+  "bugs": {
+    "url": "https://github.com/patrickdk77/xml-defuse/issues"
+  },
+  "homepage": "https://github.com/patrickdk77/xml-defuse",
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "xml",
+    "html",
+    "xhtml",
+    "svg",
+    "xslt",
+    "xsl",
+    "mht",
+    "mhtml",
+    "sanitize",
+    "sanitise",
+    "sanitizer",
+    "xss",
+    "xxe",
+    "xinclude",
+    "dtd",
+    "scrub",
+    "cleaner",
+    "disarm",
+    "defuse",
+    "defang",
+    "cdr",
+    "strip",
+    "security",
+    "inspect",
+    "scanner",
+    "detect"
+  ],
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.15",
+    "@types/chai": "^5.2.3",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^18.19.130",
+    "chai": "^6.3.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
+    "mocha": "^12.0.3",
+    "typescript": "^7.0.2"
+  },
+  "lint-staged": {
+    "*.{ts,js,mjs,cjs,json,jsonc}": "biome check --write --no-errors-on-unmatched --files-ignore-unknown=true"
+  }
+}

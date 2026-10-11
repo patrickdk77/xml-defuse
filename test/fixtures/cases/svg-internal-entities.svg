@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<!DOCTYPE svg [
+<!ENTITY ns_svg "http://www.w3.org/2000/svg">
+<!ENTITY label "Hello">
+]>
+<svg xmlns="&ns_svg;" width="1" height="1"><text>&label;</text></svg>

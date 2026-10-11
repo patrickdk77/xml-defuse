@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="10" height="10">
+<a href="#ok"><set attributeName="href" to="javascript:alert(1)"/><animate attributeName="xlink:href" values="#a;javascript:alert(2)" dur="1s"/><text y="5">x</text></a>
+<animate attributeName="opacity" from="0" to="1" dur="1s"/>
+</svg>

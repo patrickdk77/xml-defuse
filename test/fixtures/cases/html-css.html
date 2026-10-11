@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Case</title></head>
+<body>
+<style>
+@import url("https://evil.example.net/a.css");
+.a { width: expression(alert(1)); color: red }
+.b { width: \65 xpression(alert(2)) }
+.c { width: exp/**/ression(alert(3)) }
+.d { behavior: url(x.htc) }
+.e { -moz-binding: url("x.xml#b") }
+.f { filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src="x.png") }
+.g { background: url(https://evil.example.net/b.png) }
+.h { background: url(#local) }
+@media print { .i { background: url("//evil.example.net/c.png") } }
+</style>
+<p style="color: blue; background-image: url(javascript:alert(4))">p</p>
+</body>
+</html>

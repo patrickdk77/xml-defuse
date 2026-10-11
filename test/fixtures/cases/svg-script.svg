@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" onload="alert(4)" width="10" height="10">
+<script type="text/javascript"><![CDATA[ alert(1) ]]></script>
+<handler type="application/ecmascript">alert(2)</handler>
+<a xlink:href="javascript:alert(3)"><text y="5">click</text></a>
+</svg>

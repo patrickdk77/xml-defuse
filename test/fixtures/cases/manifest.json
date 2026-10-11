@@ -1,0 +1,1574 @@
+{
+  "html-clean.html": {
+    "description": "A plain page: headings, a list, a table and a web link",
+    "inspect": {
+      "status": "clean",
+      "risk": "NONE",
+      "includes": [
+        "LINK/SAFE"
+      ]
+    },
+    "disarm": {
+      "status": "clean",
+      "present": [
+        "<h1>Report</h1>",
+        "href=\"https://example.com/docs\"",
+        "&amp; an"
+      ]
+    }
+  },
+  "html-script.html": {
+    "description": "Inline and external scripts",
+    "inspect": {
+      "status": "strippable",
+      "risk": "HIGH",
+      "includes": [
+        "SCRIPT/ELEMENT"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "<script",
+        "document.write"
+      ],
+      "present": [
+        "<p>after</p>"
+      ]
+    }
+  },
+  "html-event-handlers.html": {
+    "description": "Event handlers on body, img, svg and an unknown element, and an attribute that only starts like one",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "SCRIPT/EVENT_HANDLER"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "onerror",
+        "onload",
+        "onclick",
+        "onpointerrawupdate",
+        "alert("
+      ],
+      "present": [
+        "online=\"yes\""
+      ]
+    }
+  },
+  "html-javascript-urls.html": {
+    "description": "javascript: and vbscript: URLs, written with character references, a tab and a named colon",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "SCRIPT/URL",
+        "EMBEDDED/IFRAME"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "javascript",
+        "vbscript",
+        "VBScript",
+        "alert(",
+        "msgbox"
+      ],
+      "present": [
+        "<a>a</a>"
+      ]
+    }
+  },
+  "html-meta-refresh.html": {
+    "description": "A meta refresh to another site, and a meta element that sets a cookie",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "NAVIGATION/REFRESH",
+        "NAVIGATION/SET_COOKIE"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "refresh",
+        "Set-Cookie",
+        "phish"
+      ]
+    }
+  },
+  "html-relative-navigation.html": {
+    "description": "Meta refreshes, a base address, an SVG use, a ping and a manifest at relative addresses, kept; refreshes a reader can take to another site, and relative paths written to read as other paths, removed",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "NAVIGATION/RELATIVE_BASE",
+        "NAVIGATION/RELATIVE_REFRESH",
+        "NAVIGATION/REFRESH",
+        "NAVIGATION/PATH_TRICK",
+        "EXTERNAL/RELATIVE",
+        "SVG/USE_EXTERNAL"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "present": [
+        "<base href=\"docs/\">",
+        "content=\"300\"",
+        "url='next.html'",
+        "content=\"5;page2.html\"",
+        "href=\"icons.svg#home\"",
+        "ping=\"/track click.php\"",
+        "manifest=\"site.appcache\""
+      ],
+      "absent": [
+        "phish.example.org",
+        "c.html",
+        "cdn.example.net"
+      ]
+    }
+  },
+  "html-base.html": {
+    "description": "A base element that moves every relative link",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "NAVIGATION/BASE",
+        "LINK/RELATIVE"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "<base",
+        "evil.example.net"
+      ],
+      "present": [
+        "href=\"account/login\""
+      ]
+    }
+  },
+  "html-relative.html": {
+    "description": "Relative links, images and a style sheet a web page uses, and relative paths written to read as other paths",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "LINK/RELATIVE",
+        "EXTERNAL/RELATIVE",
+        "LINK/PATH_TRICK",
+        "EXTERNAL/PATH_TRICK"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "present": [
+        "href=\"other.html\"",
+        "href=\"../up/page.html\"",
+        "href=\"/root/page.html?x=1#y\"",
+        "src=\"images/a.png\"",
+        "src=\"../img/b.png\"",
+        "href=\"css/site.css\""
+      ],
+      "absent": [
+        "etc/passwd",
+        "..\\..",
+        "%2e%2e",
+        ".../x"
+      ]
+    }
+  },
+  "html-frames.html": {
+    "description": "An inline frame with srcdoc, a frame set, and a portal",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "EMBEDDED/IFRAME",
+        "EMBEDDED/FRAME"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "<iframe",
+        "<frame",
+        "<frameset",
+        "<portal",
+        "srcdoc"
+      ],
+      "present": [
+        "no frames"
+      ]
+    }
+  },
+  "html-object-embed-applet.html": {
+    "description": "An object with parameters and fallback content, an embed and an applet",
+    "inspect": {
+      "status": "strippable",
+      "risk": "CRITICAL",
+      "includes": [
+        "EMBEDDED/OBJECT",
+        "EMBEDDED/EMBED",
+        "EMBEDDED/APPLET"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "<object",
+        "<param",
+        "<embed",
+        "<applet",
+        "swf",
+        "Evil.class"
+      ],
+      "present": [
+        "object fallback",
+        "applet fallback"
+      ]
+    }
+  },
+  "html-form-phish.html": {
+    "description": "A login form that posts a password to another site, and a button with its own form action",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "FORM/SUBMIT",
+        "FORM/PASSWORD"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "<form",
+        "collect.example.org",
+        "formaction"
+      ],
+      "present": [
+        "type=\"password\""
+      ]
+    }
+  },
+  "html-css.html": {
+    "description": "Style sheets and style attributes that run or load: expression() also hidden by an escape and a comment, behavior, -moz-binding, a filter, @import and remote url()",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "STYLE/IMPORT",
+        "STYLE/EXPRESSION",
+        "STYLE/BINDING",
+        "STYLE/REMOTE_URL",
+        "STYLE/ESCAPED",
+        "SCRIPT/URL"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "@import",
+        "xpression",
+        "ression",
+        "behavior",
+        "binding",
+        "progid",
+        "evil.example.net",
+        "javascript"
+      ],
+      "present": [
+        "color: red",
+        "url(#local)",
+        "color: blue",
+        "@media print"
+      ]
+    }
+  },
+  "html-remote-resources.html": {
+    "description": "Images, media, icons, style sheets and hints that load from elsewhere on their own",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "EXTERNAL/STYLESHEET",
+        "EXTERNAL/RESOURCE",
+        "EXTERNAL/PREFETCH",
+        "EXTERNAL/IMPORT",
+        "LINK/SAFE"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "cdn.example.net",
+        "tracker.example.net"
+      ],
+      "present": [
+        "href=\"https://example.com/\""
+      ]
+    }
+  },
+  "html-network-paths.html": {
+    "description": "Resources and links on network shares and local files, which can leak Windows credentials",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "EXTERNAL/NETWORK_PATH",
+        "EXTERNAL/LOCAL_FILE",
+        "LINK/FILE_URL",
+        "LINK/NETWORK_PATH"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "attacker.example.net",
+        "file:",
+        "calc.exe"
+      ]
+    }
+  },
+  "html-links.html": {
+    "description": "Links built to mislead or to start programs, beside a mail link and a link whose text agrees with it",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "LINK/IP_HOST",
+        "LINK/CREDENTIALS",
+        "LINK/LOOKALIKE_HOST",
+        "LINK/ENCODED_HOST",
+        "LINK/OTHER_SCHEME",
+        "LINK/DATA_URL",
+        "LINK/TEXT_MISMATCH",
+        "LINK/SAFE"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "203.0.113.9",
+        "evil.example.net",
+        "ms-msdt",
+        "data:text",
+        "xn--"
+      ],
+      "present": [
+        "href=\"https://docs.example.com/x\"",
+        "href=\"mailto:help@example.com\""
+      ]
+    }
+  },
+  "html-conditional-comments.html": {
+    "description": "A conditional comment that hides a script from every reader but Internet Explorer, and the markers of a revealed one",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "FORMAT/CONDITIONAL_COMMENT",
+        "SCRIPT/ELEMENT"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "[if",
+        "endif",
+        "alert"
+      ],
+      "present": [
+        "<p>others</p>",
+        "<!-- an ordinary comment -->"
+      ]
+    }
+  },
+  "html-ssi.shtml": {
+    "description": "Server-side include directives that run a command and pull in a file",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "SERVER/SSI"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "#exec",
+        "#include",
+        "/etc/passwd"
+      ],
+      "present": [
+        "<p>page</p>"
+      ]
+    }
+  },
+  "html-esi.html": {
+    "description": "Edge Side Includes, as an element written empty and as a comment, which a caching server runs, and a JSP action",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "SERVER/ESI",
+        "SERVER/CODE"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "esi:",
+        "internal.example.net",
+        "HTTP_COOKIE",
+        "jsp:"
+      ],
+      "present": [
+        "<p>page text stays</p>"
+      ]
+    }
+  },
+  "html-server-code.html": {
+    "description": "PHP and ASP code that a web server would run",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "SERVER/CODE"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "<?php",
+        "<?=",
+        "<%",
+        "system("
+      ],
+      "present": [
+        "&lt;% Response.Write"
+      ]
+    }
+  },
+  "html-hta-element.html": {
+    "description": "A page that declares itself an HTML Application",
+    "inspect": {
+      "status": "rejected",
+      "includes": [
+        "FORMAT/HTA"
+      ]
+    },
+    "disarm": {
+      "status": "rejected"
+    }
+  },
+  "office-flat.fodt": {
+    "description": "A flat OpenDocument text with a macro, an Office document saved as XML, which office-defuse reads",
+    "inspect": {
+      "status": "rejected",
+      "includes": [
+        "FORMAT/OFFICE"
+      ]
+    },
+    "disarm": {
+      "status": "rejected"
+    }
+  },
+  "html-named.hta": {
+    "description": "An ordinary page saved with the .hta extension, which mshta runs with desktop rights",
+    "inspect": {
+      "status": "rejected",
+      "includes": [
+        "FORMAT/HTA"
+      ]
+    },
+    "disarm": {
+      "status": "rejected"
+    }
+  },
+  "html-utf7.html": {
+    "description": "A page that declares UTF-7, in which older Internet Explorer reads +ADw-script+AD4- as a script",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "FORMAT/UTF7"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "present": [
+        "charset=utf-8"
+      ],
+      "absent": [
+        "utf-7"
+      ]
+    }
+  },
+  "html-noscript.html": {
+    "description": "A noscript element read two ways: with scripting on its text ends early and leaves an image with a handler; with scripting off it holds a remote image",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "SCRIPT/EVENT_HANDLER",
+        "EXTERNAL/RESOURCE"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "onerror",
+        "tracker.example.net",
+        "alert("
+      ]
+    }
+  },
+  "html-foreign-content.html": {
+    "description": "Markup that leaves SVG and MathML for HTML, or switches between raw text and markup, as mutation XSS does",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "SCRIPT/EVENT_HANDLER",
+        "SVG/FOREIGN_OBJECT"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "onerror=alert(1)",
+        "<iframe",
+        "alert(1)"
+      ],
+      "present": [
+        "\\3c img src=x onerror=alert(2)>",
+        "\\3c img src=x onerror=alert(3)>"
+      ]
+    }
+  },
+  "html-raw-text.html": {
+    "description": "Raw text elements whose text holds markup: kept as text, and escaped so an XML reader sees no tags either",
+    "inspect": {
+      "status": "clean"
+    },
+    "disarm": {
+      "status": "clean",
+      "absent": [
+        "<b>shown",
+        "<script>",
+        "<img src=x"
+      ],
+      "present": [
+        "&lt;b>shown as text",
+        "&lt;script&gt;not a script",
+        "\\3c script>no"
+      ]
+    }
+  },
+  "html-script-escapes.html": {
+    "description": "A script whose text holds <!-- and <script>, so it ends at a later </script> than a simple search finds",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "SCRIPT/ELEMENT"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "var s",
+        "double-escaped"
+      ],
+      "present": [
+        "<p>after the script</p>"
+      ]
+    }
+  },
+  "html-shift-jis.html": {
+    "description": "A Shift_JIS page whose meta element names its encoding",
+    "inspect": {
+      "status": "clean",
+      "encoding": "shift_jis"
+    },
+    "disarm": {
+      "status": "clean",
+      "present": [
+        "charset=\"utf-8\"",
+        "<p>\u65e5\u672c</p>"
+      ]
+    }
+  },
+  "html-utf16.html": {
+    "description": "A UTF-16LE page with a byte order mark",
+    "inspect": {
+      "status": "strippable",
+      "encoding": "utf-16le",
+      "includes": [
+        "SCRIPT/ELEMENT"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "present": [
+        "<p>caf\u00e9</p>"
+      ]
+    }
+  },
+  "html-windows-1252.html": {
+    "description": "A page with bytes that are not UTF-8 and no declaration, read as windows-1252",
+    "inspect": {
+      "status": "clean",
+      "encoding": "windows-1252"
+    },
+    "disarm": {
+      "status": "clean",
+      "present": [
+        "<p>\u201ccaf\u00e9\u201d</p>"
+      ]
+    }
+  },
+  "html-references.html": {
+    "description": "Character references: legacy names without a semicolon, names an attribute keeps as written, and C1 numbers",
+    "inspect": {
+      "status": "clean"
+    },
+    "disarm": {
+      "status": "clean",
+      "present": [
+        "<p>&amp; &lt;x&gt; \u00a9 1 \u20ac \u2013 \u2209 \u00acit;</p>",
+        "href=\"https://example.com/?a=1&amp;b=2&amp;copy=3&amp;notit=4\""
+      ]
+    }
+  },
+  "html-data-urls.html": {
+    "description": "Images and an icon in data: URLs, which are whole files for the plugins, and an SVG one that carries a script",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "EMBEDDED/NO_PLUGIN"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "data:image"
+      ]
+    }
+  },
+  "html-duplicate-attributes.html": {
+    "description": "A second href on one link, which every HTML reader drops",
+    "inspect": {
+      "status": "clean"
+    },
+    "disarm": {
+      "status": "clean",
+      "absent": [
+        "javascript"
+      ],
+      "present": [
+        "href=\"https://example.com/\""
+      ]
+    }
+  },
+  "html-attribute-names.html": {
+    "description": "Attribute names that hold quotes, left by markup that closes a value twice",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "PROCESSING/CONTENT_REMOVED"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "onerror"
+      ],
+      "present": [
+        "<p>after</p>"
+      ]
+    }
+  },
+  "html-metadata.html": {
+    "description": "Author and generator meta elements and comments, which only metadata stripping removes",
+    "options": {
+      "stripMetadata": true
+    },
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "METADATA/STRIPPED"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "Someone",
+        "Editor 1.0",
+        "internal note"
+      ],
+      "present": [
+        "<p>body</p>"
+      ]
+    }
+  },
+  "svg-clean.svg": {
+    "description": "A drawing with a gradient referenced by fragment",
+    "inspect": {
+      "status": "clean",
+      "risk": "NONE",
+      "format": "svg"
+    },
+    "disarm": {
+      "status": "clean",
+      "present": [
+        "fill=\"url(#g)\"",
+        "<linearGradient id=\"g\">"
+      ]
+    }
+  },
+  "svg-script.svg": {
+    "description": "An SVG script element, a CDATA script, an onload handler, a handler element and a javascript: link",
+    "inspect": {
+      "status": "strippable",
+      "risk": "CRITICAL",
+      "format": "svg",
+      "includes": [
+        "SCRIPT/ELEMENT",
+        "SCRIPT/EVENT_HANDLER",
+        "SCRIPT/URL"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "<script",
+        "<handler",
+        "onload",
+        "javascript",
+        "alert("
+      ],
+      "present": [
+        "<text y=\"5\">click</text>"
+      ]
+    }
+  },
+  "svg-foreign-object.svg": {
+    "description": "A foreignObject that holds an XHTML frame and script",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "SVG/FOREIGN_OBJECT",
+        "EMBEDDED/IFRAME",
+        "SCRIPT/ELEMENT"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "foreignObject",
+        "iframe",
+        "script"
+      ]
+    }
+  },
+  "svg-use-external.svg": {
+    "description": "use elements that copy from another file and from a data: URL",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "SVG/USE_EXTERNAL"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "<use",
+        "example.net"
+      ]
+    }
+  },
+  "svg-use-amplification.svg": {
+    "description": "Nested use references that copy one group into billions of elements",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "SVG/USE_AMPLIFICATION"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "<use"
+      ]
+    }
+  },
+  "svg-animate-href.svg": {
+    "description": "Animations that set a link to a javascript: URL after the link was checked",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "SCRIPT/ANIMATION"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "<set",
+        "javascript",
+        "xlink:href"
+      ],
+      "present": [
+        "attributeName=\"opacity\""
+      ]
+    }
+  },
+  "svg-external-resources.svg": {
+    "description": "An image, a filter image, a pattern reference and a fill that load from other files",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "EXTERNAL/RESOURCE",
+        "STYLE/REMOTE_URL"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "cdn.example.net"
+      ]
+    }
+  },
+  "svg-style.svg": {
+    "description": "An SVG style sheet with @import and a remote background",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "STYLE/IMPORT",
+        "STYLE/REMOTE_URL"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "@import",
+        "cdn.example.net"
+      ],
+      "present": [
+        "fill: blue"
+      ]
+    }
+  },
+  "svg-w3c-doctype.svg": {
+    "description": "The SVG 1.1 document type declaration, whose DTD is on www.w3.org",
+    "inspect": {
+      "status": "clean",
+      "includes": [
+        "XML/DOCTYPE"
+      ]
+    },
+    "disarm": {
+      "status": "clean",
+      "present": [
+        "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">"
+      ]
+    }
+  },
+  "svg-internal-entities.svg": {
+    "description": "An internal subset whose entities give namespace URIs and text, as illustration tools write them",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "XML/INTERNAL_SUBSET"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "ENTITY",
+        "&ns_svg;",
+        "&label;"
+      ],
+      "present": [
+        "xmlns=\"http://www.w3.org/2000/svg\"",
+        "<text>Hello</text>"
+      ]
+    }
+  },
+  "svg-no-namespace.svg": {
+    "description": "An svg element without its namespace, which only an HTML reader turns into a drawing",
+    "inspect": {
+      "status": "strippable",
+      "format": "html",
+      "includes": [
+        "SCRIPT/ELEMENT",
+        "SCRIPT/URL"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "<script",
+        "javascript"
+      ]
+    }
+  },
+  "svg-prefixed.svg": {
+    "description": "SVG written with an svg: prefix, whose script element is a script by its namespace",
+    "inspect": {
+      "status": "strippable",
+      "format": "svg",
+      "includes": [
+        "SCRIPT/ELEMENT"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "svg:script",
+        "alert"
+      ],
+      "present": [
+        "<svg:rect width=\"1\" height=\"1\"/>"
+      ]
+    }
+  },
+  "svg-comment-polyglot.svg": {
+    "description": "An XML comment that an HTML reader ends at once, so the image with a handler inside it is markup to that reader",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "FORMAT/AMBIGUOUS_COMMENT"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "onerror",
+        "<img"
+      ]
+    }
+  },
+  "svg-instruction-polyglot.svg": {
+    "description": "A processing instruction whose data holds \">\", which ends it early for an HTML reader",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "FORMAT/AMBIGUOUS_INSTRUCTION"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "onerror",
+        "<?x a"
+      ]
+    }
+  },
+  "xml-external-entity.xml": {
+    "description": "An external entity that reads a local file into the content",
+    "inspect": {
+      "status": "strippable",
+      "format": "xml",
+      "includes": [
+        "XML/EXTERNAL_ENTITY",
+        "XML/INTERNAL_SUBSET"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "ENTITY",
+        "/etc/passwd",
+        "&x;"
+      ],
+      "present": [
+        "<r></r>"
+      ]
+    }
+  },
+  "xml-external-parameter-entity.xml": {
+    "description": "An external parameter entity, the out-of-band form of external entity attacks",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "XML/EXTERNAL_ENTITY",
+        "XML/INTERNAL_SUBSET"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "ENTITY",
+        "attacker.example.net",
+        "%remote"
+      ],
+      "present": [
+        "<r>data</r>"
+      ]
+    }
+  },
+  "xml-entity-expansion.xml": {
+    "description": "Ten levels of ten entity references each, which expand to a billion copies",
+    "inspect": {
+      "status": "rejected",
+      "risk": "UNKNOWN",
+      "includes": [
+        "LIMIT/ENTITY_EXPANSIONS"
+      ]
+    },
+    "disarm": {
+      "status": "rejected"
+    }
+  },
+  "xml-entity-size.xml": {
+    "description": "One large entity referenced many times, which expands to more text than the limit",
+    "inspect": {
+      "status": "rejected",
+      "risk": "UNKNOWN",
+      "includes": [
+        "LIMIT/ENTITY_SIZE"
+      ]
+    },
+    "disarm": {
+      "status": "rejected"
+    }
+  },
+  "xml-external-dtd.xml": {
+    "description": "A document type declaration whose DTD a validating parser fetches from another server",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "XML/EXTERNAL_DTD"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "attacker.example.net",
+        "SYSTEM"
+      ],
+      "present": [
+        "<!DOCTYPE r>"
+      ]
+    }
+  },
+  "xml-xinclude.xml": {
+    "description": "An XInclude that reads a local file as text, with a fallback",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "XML/XINCLUDE"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "xi:include",
+        "/etc/passwd",
+        "fallback"
+      ],
+      "present": [
+        "<p>kept</p>"
+      ]
+    }
+  },
+  "xml-stylesheet-instruction.xml": {
+    "description": "An xml-stylesheet instruction that loads an XSLT transform from another server",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "EXTERNAL/STYLESHEET"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "xml-stylesheet",
+        "attacker.example.net"
+      ]
+    }
+  },
+  "xml-stylesheet-relative.xml": {
+    "description": "An xml-stylesheet instruction that loads a CSS file beside the document, kept, and one that loads an XSLT transform beside it, removed",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "EXTERNAL/RELATIVE",
+        "EXTERNAL/STYLESHEET"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "present": [
+        "href=\"style.css\""
+      ],
+      "absent": [
+        "view.xsl"
+      ]
+    }
+  },
+  "xml-html-reading.xml": {
+    "description": "Data XML without namespaces whose script, image handler and click handler run if an HTML reader opens it; an attribute that only starts like a handler stays",
+    "inspect": {
+      "status": "strippable",
+      "format": "xml",
+      "includes": [
+        "SCRIPT/ELEMENT",
+        "SCRIPT/EVENT_HANDLER",
+        "EXTERNAL/RELATIVE"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "<script",
+        "onerror",
+        "onclick",
+        "alert("
+      ],
+      "present": [
+        "<item online=\"yes\">one</item>"
+      ]
+    }
+  },
+  "xml-malformed.xml": {
+    "description": "A file that declares XML but is not well-formed, so a browser reads it as a page, where its script runs",
+    "inspect": {
+      "status": "strippable",
+      "format": "html",
+      "includes": [
+        "XML/MALFORMED",
+        "SCRIPT/ELEMENT"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "<script",
+        "alert("
+      ]
+    }
+  },
+  "xml-latin1.xml": {
+    "description": "A document in ISO-8859-1, which the output declares as UTF-8",
+    "inspect": {
+      "status": "clean",
+      "encoding": "windows-1252"
+    },
+    "disarm": {
+      "status": "clean",
+      "present": [
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
+        "<r>caf\u00e9</r>"
+      ]
+    }
+  },
+  "xml-utf16.xml": {
+    "description": "A UTF-16LE document with a byte order mark",
+    "inspect": {
+      "status": "clean",
+      "encoding": "utf-16le"
+    },
+    "disarm": {
+      "status": "clean",
+      "present": [
+        "encoding=\"UTF-8\"",
+        "<r>\u00e9t\u00e9</r>"
+      ]
+    }
+  },
+  "xml-unknown-encoding.xml": {
+    "description": "An encoding no reader here knows, so the file is read as a page",
+    "inspect": {
+      "status": "strippable",
+      "format": "html",
+      "includes": [
+        "XML/ENCODING"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "present": [
+        "<r>text</r>"
+      ]
+    }
+  },
+  "xslt-msxsl-script.xsl": {
+    "description": "An msxsl:script block that a .NET or MSXML processor runs, and a call to the function it defines",
+    "inspect": {
+      "status": "strippable",
+      "risk": "CRITICAL",
+      "format": "xslt",
+      "includes": [
+        "XSLT/SCRIPT",
+        "XSLT/EXTENSION_FUNCTION"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "msxsl:script",
+        "ActiveXObject",
+        "user:run"
+      ],
+      "present": [
+        "<xsl:template match=\"/\">"
+      ]
+    }
+  },
+  "xslt-java-extension.xsl": {
+    "description": "A Xalan Java extension call that starts a program",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "XSLT/EXTENSION_FUNCTION"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "rt:exec",
+        "rt:getRuntime"
+      ]
+    }
+  },
+  "xslt-php-function.xsl": {
+    "description": "A call to PHP's function bridge",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "XSLT/EXTENSION_FUNCTION"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "php:function"
+      ]
+    }
+  },
+  "xslt-document.xsl": {
+    "description": "Expressions that read other files and an environment variable",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "XSLT/DOCUMENT"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "/etc/passwd",
+        "unparsed-text"
+      ],
+      "present": [
+        "concat('document(', 'x')"
+      ]
+    }
+  },
+  "xslt-include.xsl": {
+    "description": "An import and an include of stylesheets from elsewhere",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "XSLT/INCLUDE"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "xsl:import",
+        "xsl:include",
+        "attacker.example.net"
+      ],
+      "present": [
+        "ok"
+      ]
+    }
+  },
+  "xslt-write-files.xslt": {
+    "description": "A result-document and an extension element that write files, beside a function the stylesheet defines itself",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "XSLT/RESULT_DOCUMENT",
+        "XSLT/EXTENSION_ELEMENT"
+      ],
+      "excludes": [
+        "XSLT/EXTENSION_FUNCTION"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "result-document",
+        "exsl:document",
+        "/tmp/"
+      ],
+      "present": [
+        "f:double(2)"
+      ]
+    }
+  },
+  "xslt-clean.xsl": {
+    "description": "A stylesheet that uses only node-set() from EXSLT and MSXML",
+    "inspect": {
+      "status": "clean",
+      "format": "xslt"
+    },
+    "disarm": {
+      "status": "clean",
+      "present": [
+        "exsl:node-set($v)"
+      ]
+    }
+  },
+  "xslt-result-markup.xsl": {
+    "description": "Instructions that put script in the result: an element and attributes named on the instruction, text written as markup, and a character map",
+    "inspect": {
+      "status": "strippable",
+      "format": "xslt",
+      "includes": [
+        "XSLT/UNESCAPED_OUTPUT",
+        "SCRIPT/ELEMENT",
+        "SCRIPT/EVENT_HANDLER",
+        "SCRIPT/URL"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "output-character",
+        "alert(2)",
+        "alert(3)",
+        "alert(4)",
+        "escaping=\"yes\">&lt;img"
+      ],
+      "present": [
+        "<xsl:element name=\"p\">kept</xsl:element>",
+        "kept title",
+        "disable-output-escaping=\"yes\">&lt;!DOCTYPE html&gt;",
+        "<xsl:text>&lt;img src=x onerror=alert(5)&gt;</xsl:text>",
+        "<xsl:value-of select=\".\"/>"
+      ]
+    }
+  },
+  "xslt-dynamic.xsl": {
+    "description": "XSLT 3.0 instructions that evaluate an expression built at run time, read other documents and load a package, and EXSLT script",
+    "inspect": {
+      "status": "strippable",
+      "format": "xslt",
+      "includes": [
+        "XSLT/EVALUATE",
+        "XSLT/DOCUMENT",
+        "XSLT/INCLUDE",
+        "XSLT/SCRIPT"
+      ],
+      "excludes": [
+        "XSLT/EXTENSION_FUNCTION"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "xsl:evaluate",
+        "source-document",
+        "use-package",
+        "func:script"
+      ],
+      "present": [
+        "my:twice(2)",
+        "<func:function name=\"my:twice\">"
+      ]
+    }
+  },
+  "xml-stylesheet-decoy.xml": {
+    "description": "xml-stylesheet instructions whose pseudo-attributes hide a remote style sheet or an XSLT transform behind a decoy, removed, beside a well-formed one kept",
+    "inspect": {
+      "status": "strippable",
+      "format": "xml",
+      "includes": [
+        "EXTERNAL/STYLESHEET",
+        "EXTERNAL/RELATIVE"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "present": [
+        "href=\"site.css\""
+      ],
+      "absent": [
+        "evil.example.net",
+        "view.xsl",
+        "&#x68;"
+      ]
+    }
+  },
+  "xml-schema-relative.xml": {
+    "description": "Schema locations beside the document, in an attribute and in an xml-model instruction, kept, and one whose path climbs out, removed",
+    "inspect": {
+      "status": "strippable",
+      "format": "xml",
+      "includes": [
+        "EXTERNAL/RELATIVE",
+        "EXTERNAL/PATH_TRICK"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "present": [
+        "href=\"schemas/s.rng\"",
+        "xsi:schemaLocation=\"urn:r r.xsd\""
+      ],
+      "absent": [
+        "x.xsd"
+      ]
+    }
+  },
+  "xml-schema-location.xml": {
+    "description": "Schema locations a validating parser fetches, in an attribute and in an xml-model instruction, beside a schema on www.w3.org",
+    "inspect": {
+      "status": "strippable",
+      "format": "xml",
+      "includes": [
+        "XML/SCHEMA_LOCATION"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "attacker.example.net",
+        "xml-model"
+      ],
+      "present": [
+        "xsi:noNamespaceSchemaLocation=\"http://www.w3.org/2001/xml.xsd\""
+      ]
+    }
+  },
+  "xml-model-decoy.xml": {
+    "description": "xml-model instructions whose pseudo-attributes hide a remote schema behind a decoy, removed, beside a schema beside the document, kept",
+    "inspect": {
+      "status": "strippable",
+      "format": "xml",
+      "includes": [
+        "XML/SCHEMA_LOCATION",
+        "EXTERNAL/RELATIVE"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "present": [
+        "href=\"schemas/s.rng\""
+      ],
+      "absent": [
+        "attacker.example.net"
+      ]
+    }
+  },
+  "mht-basic.mht": {
+    "description": "A saved page: an HTML part with a script and an image that names another part, the image, and a style sheet part with expression()",
+    "inspect": {
+      "status": "strippable",
+      "format": "mht",
+      "includes": [
+        "SCRIPT/ELEMENT",
+        "STYLE/EXPRESSION",
+        "EMBEDDED/NO_PLUGIN"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "present": [
+        "Content-Transfer-Encoding: base64",
+        "Content-Location: file:///C:/page_files/s.css"
+      ]
+    }
+  },
+  "mht-hidden-data.mht": {
+    "description": "Markup outside the parts, before the first boundary and after the last",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "MHT/HIDDEN_DATA"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "<script"
+      ]
+    }
+  },
+  "mht-nested.mht": {
+    "description": "A multipart/alternative inside the related body, with a start parameter that names the second part",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "SCRIPT/EVENT_HANDLER"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "present": [
+        "multipart/alternative"
+      ]
+    }
+  },
+  "mht-single-body.mht": {
+    "description": "An HTML page saved with MIME headers and one body",
+    "inspect": {
+      "status": "strippable",
+      "format": "mht",
+      "includes": [
+        "EMBEDDED/IFRAME"
+      ]
+    },
+    "disarm": {
+      "status": "defused"
+    }
+  },
+  "mht-undecodable.mht": {
+    "description": "A part in a transfer encoding no reader here decodes",
+    "inspect": {
+      "status": "strippable",
+      "includes": [
+        "EMBEDDED/NO_PLUGIN"
+      ]
+    },
+    "disarm": {
+      "status": "defused",
+      "absent": [
+        "x-uuencode"
+      ]
+    }
+  },
+  "mht-no-parts.mht": {
+    "description": "MIME headers that name a multipart body with no parts",
+    "inspect": {
+      "status": "rejected",
+      "risk": "UNKNOWN",
+      "includes": [
+        "MHT/MALFORMED"
+      ]
+    },
+    "disarm": {
+      "status": "rejected"
+    }
+  },
+  "text-only.html": {
+    "description": "Text with no markup at all, which a browser shows as a page",
+    "inspect": {
+      "status": "clean",
+      "format": "html"
+    },
+    "disarm": {
+      "status": "clean",
+      "present": [
+        "Just some text &amp; more."
+      ]
+    }
+  },
+  "not-markup.bin": {
+    "description": "Binary content with no markup, which this package does not read",
+    "inspect": {
+      "status": "rejected",
+      "risk": "UNKNOWN",
+      "includes": [
+        "FORMAT/UNRECOGNIZED"
+      ]
+    },
+    "disarm": {
+      "status": "rejected"
+    }
+  }
+}

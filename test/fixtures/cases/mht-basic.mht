@@ -1,0 +1,23 @@
+MIME-Version: 1.0
+Content-Type: multipart/related; boundary="b1"; type="text/html"
+
+This is a multi-part message in MIME format.
+
+--b1
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Location: file:///C:/page.htm
+
+<html><head><link rel=3D"stylesheet" href=3D"page_files/s.css"></head><body><img src=3D"page_files/i.png"><script>alert(1)</script><p>saved</p></body></html>
+--b1
+Content-Type: image/png
+Content-Transfer-Encoding: base64
+Content-Location: file:///C:/page_files/i.png
+
+iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==
+--b1
+Content-Type: text/css
+Content-Location: file:///C:/page_files/s.css
+
+p { color: red; width: expression(alert(2)) }
+--b1--

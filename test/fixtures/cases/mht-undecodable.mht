@@ -1,0 +1,17 @@
+MIME-Version: 1.0
+Content-Type: multipart/related; boundary="b1"
+
+This is a multi-part message in MIME format.
+
+--b1
+Content-Type: text/html
+
+<p>root</p>
+--b1
+Content-Type: application/octet-stream
+Content-Transfer-Encoding: x-uuencode
+
+begin 644 a
+`
+end
+--b1--

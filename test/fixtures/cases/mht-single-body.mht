@@ -1,0 +1,5 @@
+MIME-Version: 1.0
+Content-Type: text/html; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+
+<html><body><iframe src="https://example.net/"></iframe><p>body</p></body></html>
