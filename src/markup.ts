@@ -16,6 +16,7 @@ export const NS = {
   visio2003: 'http://schemas.microsoft.com/visio/2003/core',
   xsi: 'http://www.w3.org/2001/XMLSchema-instance',
   xsd: 'http://www.w3.org/2001/XMLSchema',
+  rng: 'http://relaxng.org/ns/structure/1.0',
   exsltFunctions: 'http://exslt.org/functions',
 } as const;
 

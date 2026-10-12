@@ -1,6 +1,6 @@
 import * as crypto from 'node:crypto';
 import { TextDecoder } from 'node:util';
-import { formatOfRoot, MIME_TYPES } from './detect';
+import { claimsCss, formatOfRoot, isBinary, MIME_TYPES } from './detect';
 import { bomOf, decoderFor, encodingFor, isUtf7Label, prescan } from './encoding';
 import { checkTime, isIoError, NestedIoError, NestingLimitError, StopError, stopsTree } from './errors';
 import { FindingFactory } from './findings';
@@ -142,7 +142,10 @@ type PartPlan =
   | { kind: 'file'; decision: FileDecision; replacement?: SpillSink }
   | { kind: 'drop' };
 
-type Plan = { kind: 'markup'; markup: MarkupPlan } | { kind: 'mht'; file: MhtFile; parts: Map<number, PartPlan> };
+/** A style sheet: its text, how it was decoded, and whether its output starts with the UTF-8 byte order mark it had. */
+type CssPlan = { kind: 'css'; text: string; memo: Memo; encoding: string; bom: boolean };
+
+type Plan = { kind: 'markup'; markup: MarkupPlan } | { kind: 'mht'; file: MhtFile; parts: Map<number, PartPlan> } | CssPlan;
 
 interface Analysis {
   inspection: XmlInspection;
@@ -673,13 +676,27 @@ async function analyzeMht(run: Run, src: ByteSource, findings: FindingList): Pro
 }
 
 /**
- * Whether the first bytes are binary: a format the type check knows by its signature, or a NUL byte in text that is
- * not UTF-16.
+ * Reads a style sheet whole and runs the style rules over it, as for a style element. The encoding comes from a byte
+ * order mark, then an @charset rule, then UTF-8, as CSS Syntax decodes a sheet, and @charset "utf-16" means UTF-8.
  */
-function isBinary(head: Uint8Array): boolean {
-  if (sniffType(head.subarray(0, 1024)) !== undefined) return true;
-  const bom = bomOf(head);
-  return bom?.encoding !== 'utf-16le' && bom?.encoding !== 'utf-16be' && head.includes(0);
+async function analyzeCss(run: Run, src: ByteSource, size: number, findings: FindingList): Promise<CssPlan> {
+  if (size > run.limits.tokenSize) throw new LimitText(run.limits.tokenSize);
+  const bytes = Buffer.from(await src.read(0, size));
+  const bom = bomOf(bytes);
+  let encoding = bom?.encoding;
+  if (!encoding) {
+    const m = /^@charset "([^"]{1,40})";/.exec(bytes.subarray(0, 1024).toString('latin1'));
+    const label = m ? encodingFor(m[1]) : undefined;
+    encoding = label === undefined || label === 'utf-16le' || label === 'utf-16be' ? 'utf-8' : label;
+  }
+  const text = decoderFor(encoding).decode(bytes.subarray(bom?.length ?? 0));
+  const memo = new Memo();
+  const list = new FindingList();
+  const ctx = makeCtx(run, list, memo);
+  new Rules(ctx, { html: true, keyPrefix: '', locPrefix: '', lineOffset: 0 }).sheet(text);
+  await drainJobs(run, ctx);
+  findings.merge(list);
+  return { kind: 'css', text, memo, encoding, bom: bom?.encoding === 'utf-8' };
 }
 
 /** The last path segment of a URL, as a file name for the type check. */
@@ -690,7 +707,7 @@ function lastSegment(location: string | undefined): string | undefined {
 }
 
 /** Inspects `source`, and keeps the plan the rewrite follows. It throws an I/O error instead of reporting a verdict. */
-async function analyze(run: Run, source: ByteSource, name?: string, mode?: 'xml' | 'html'): Promise<Analysis> {
+async function analyze(run: Run, source: ByteSource, name?: string, mode?: 'xml' | 'html' | 'css', declaredType?: string): Promise<Analysis> {
   const findings = new FindingList();
   let format: XmlFormat = '';
   let encoding = '';
@@ -705,12 +722,16 @@ async function analyze(run: Run, source: ByteSource, name?: string, mode?: 'xml'
     const head = await src.read(0, Math.min(size, 4096));
     // An XML reader that decodes EBCDIC reads the file as XML, so it is neither text nor a page to read as HTML.
     if (isEbcdicXml(head)) throw new StopError(C.Format, D.Ebcdic, 'XML in EBCDIC, which this package does not decode', {});
-    const sniff = sniffMarkup(head);
+    const sniff = mode === 'css' ? undefined : sniffMarkup(head);
     if (sniff?.kind === 'xml' && isOfficeXml(head)) findings.push(run.factory.make(C.Format, D.Office));
     // Without markup at the start, text is still a page to a browser, which shows it. Binary content is not.
     if (!sniff && mode === undefined && isBinary(head)) throw new StopError(C.Format, D.Unrecognized, 'Binary content, with no markup or MIME headers at the start', {});
     let plan: Plan;
-    if (sniff?.kind === 'mht' && mode === undefined) {
+    if (mode === 'css' || (mode === undefined && !sniff && claimsCss(name, declaredType))) {
+      format = 'css';
+      plan = await analyzeCss(run, src, size, findings);
+      encoding = plan.encoding;
+    } else if (sniff?.kind === 'mht' && mode === undefined) {
       format = 'mht';
       const m = await analyzeMht(run, src, findings);
       plan = m.plan;
@@ -763,6 +784,15 @@ async function write(run: Run, input: ByteSource, plan: Plan, out: ByteSink): Pr
     await writeMarkup(run, input, plan.markup, out);
     return;
   }
+  if (plan.kind === 'css') {
+    // The output is UTF-8, so an @charset that named another encoding names UTF-8 now.
+    const ctx = makeCtx(run, undefined, plan.memo);
+    let css = new Rules(ctx, { html: true, keyPrefix: '', locPrefix: '', lineOffset: 0 }).sheet(plan.text);
+    if (plan.encoding !== 'utf-8') css = css.replace(/^@charset "[^"]*";/, '@charset "utf-8";');
+    if (plan.bom) await out.write(Uint8Array.from([0xef, 0xbb, 0xbf]));
+    await out.write(Buffer.from(css, 'utf8'));
+    return;
+  }
   await writeMht(plan.file, out, async (part): Promise<PartOutput> => {
     run.check();
     const p = plan.parts.get(part.index);
@@ -793,7 +823,8 @@ async function crossRead(run: Run, src: ByteSource, plan: Plan): Promise<DefuseF
   const findings = new FindingList();
   const memo = new Memo();
   const ctx = makeCtx(run, findings, memo);
-  const html = plan.kind === 'mht' || plan.markup.mode === 'xml';
+  // A style sheet shown as a page must show as text.
+  const html = plan.kind !== 'markup' || plan.markup.mode === 'xml';
   const size = await src.size();
   const head = await src.read(0, Math.min(size, CHUNK));
   const enc = htmlEncoding(head, undefined, head.length === size);
@@ -835,14 +866,14 @@ const deadlineFor = (options: XmlOptions) => (options.limits?.timeMs !== undefin
 
 /** Inspects a file without changing it. The source is closed when the run ends. */
 export async function inspectXmlSource(source: ByteSource, options: XmlOptions = {}): Promise<XmlInspection> {
-  return inspectAtDepth(source, options, 0, deadlineFor(options), options.name);
+  return inspectAtDepth(source, options, 0, deadlineFor(options), options.name, options.declaredType);
 }
 
 /** Internal entry that carries the depth, the deadline and the file's name. */
-export async function inspectAtDepth(source: ByteSource, options: XmlOptions, depth: number, deadline: number | undefined, name?: string): Promise<XmlInspection> {
+export async function inspectAtDepth(source: ByteSource, options: XmlOptions, depth: number, deadline: number | undefined, name?: string, declaredType?: string): Promise<XmlInspection> {
   const run = new Run(options, depth, deadline);
   try {
-    return (await analyze(run, source, name)).inspection;
+    return (await analyze(run, source, name, undefined, declaredType)).inspection;
   } finally {
     if (depth === 0) await closeSource(source);
     await run.cleanup();
@@ -854,11 +885,19 @@ export async function inspectAtDepth(source: ByteSource, options: XmlOptions, de
  * syntax and in the other one. The source is closed when the run ends.
  */
 export async function disarmXmlSource(source: ByteSource, sink: ByteSink, options: XmlOptions = {}): Promise<XmlDisarmResult> {
-  return disarmAtDepth(source, sink, options, 0, deadlineFor(options), options.name);
+  return disarmAtDepth(source, sink, options, 0, deadlineFor(options), options.name, options.declaredType);
 }
 
 /** Internal entry that carries the nesting depth, the deadline a nested file shares with the upload, and its name. */
-export async function disarmAtDepth(source: ByteSource, sink: ByteSink, options: XmlOptions, depth: number, deadline: number | undefined, name?: string): Promise<XmlDisarmResult> {
+export async function disarmAtDepth(
+  source: ByteSource,
+  sink: ByteSink,
+  options: XmlOptions,
+  depth: number,
+  deadline: number | undefined,
+  name?: string,
+  declaredType?: string,
+): Promise<XmlDisarmResult> {
   const run = new Run(options, depth, deadline);
   let input = source;
   try {
@@ -876,7 +915,7 @@ export async function disarmAtDepth(source: ByteSource, sink: ByteSink, options:
         }
         input = snapshot.source();
       }
-      a = await analyze(run, input, name);
+      a = await analyze(run, input, name, undefined, declaredType);
     } catch (e) {
       if (stopsTree(e) !== 'DEFUSE_LIMIT' || depth > 0) throw e;
       a = { inspection: finish([stopFinding(run.factory, e)], options, true, '', '') };
@@ -915,7 +954,7 @@ export async function disarmAtDepth(source: ByteSource, sink: ByteSink, options:
     let after: XmlInspection;
     let cross: DefuseFinding[];
     try {
-      after = (await using(out.source(), s => analyze(check, s, undefined, plan.kind === 'markup' ? plan.markup.mode : undefined))).inspection;
+      after = (await using(out.source(), s => analyze(check, s, undefined, plan.kind === 'markup' ? plan.markup.mode : plan.kind === 'css' ? 'css' : undefined))).inspection;
       try {
         cross = await using(out.source(), s => crossRead(check, s, plan));
       } catch (e) {

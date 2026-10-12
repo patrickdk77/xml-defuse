@@ -172,7 +172,7 @@ export enum XmlRisk {
 }
 
 /** The syntax and vocabulary a file was read as. '' when it was not recognized. */
-export type XmlFormat = 'html' | 'xhtml' | 'svg' | 'xslt' | 'xml' | 'mht' | '';
+export type XmlFormat = 'html' | 'xhtml' | 'svg' | 'xslt' | 'xml' | 'mht' | 'css' | '';
 
 export interface XmlInspection {
   status: 'clean' | 'strippable' | 'rejected';
@@ -303,10 +303,13 @@ export interface XmlScoreBands {
 
 export interface XmlOptions {
   /**
-   * The file's name, as an upload or the container that holds the file gives it. Only the HTML Application check reads
-   * it: a name that ends in .hta makes the file FORMAT/HTA. xmlPlugin passes the name of each file it gets instead.
+   * The file's name, as an upload or the container that holds the file gives it. A name that ends in .hta makes the file
+   * FORMAT/HTA, and one that ends in .css reads a file with no markup at the start as a style sheet. xmlPlugin passes the
+   * name of each file it gets instead.
    */
   name?: string;
+  /** The MIME type the upload declares. `text/css` reads a file with no markup at the start as a style sheet. */
+  declaredType?: string;
   limits?: XmlLimits;
   /** Default false. */
   stripMetadata?: boolean;

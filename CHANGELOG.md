@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.2 - 2026-10-12
+
+- A file whose name or declared type says CSS, with no markup at the start, is read as a style sheet with the rules a `style` element gets, and `detectXml` claims it as `text/css`. The new `declaredType` option carries the upload's type, and `xmlPlugin` passes each file's. The rewrite is UTF-8, and an `@charset` rule that named another encoding names UTF-8 in it.
+- The `href` of a RELAX NG `externalRef` or `include` that loads a grammar from elsewhere is XML/SCHEMA_LOCATION, as an XML Schema `schemaLocation` is. A relative one stays.
+
 ## 0.1.1 - 2026-10-11
 
 - `detectXml` and `detectXmlSource` tell a router whether xml-defuse reads a file and in which format. `xmlPlugin` takes what they find, and decides between XML and HTML on the first 64 KiB, as the inspection does, where it looked at 4 KiB.

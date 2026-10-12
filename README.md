@@ -1,6 +1,6 @@
 # xml-defuse
 
-Sanitize HTML, XHTML, SVG, XML, XSLT and MHT files before you store or serve them. xml-defuse finds scripts, event handlers, script URLs, external entities, XInclude, XSLT extensions, frames, plugins, forms, redirects, CSS that runs or loads, server-side includes and the other active content these formats carry. It scores the risk and writes a clean copy with that content removed. This is content disarm and reconstruction, or CDR.
+Sanitize HTML, XHTML, SVG, XML, XSLT and MHT files and CSS style sheets before you store or serve them. xml-defuse finds scripts, event handlers, script URLs, external entities, XInclude, XSLT extensions, frames, plugins, forms, redirects, CSS that runs or loads, server-side includes and the other active content these formats carry. It scores the risk and writes a clean copy with that content removed. This is content disarm and reconstruction, or CDR.
 
 It has no runtime dependencies, streams the file in chunks, and runs the same code for buffers, local files and S3 objects. It follows the shapes of [pdf-defuse](https://github.com/patrickdk77/pdf-defuse), so the two fit the same defuse family.
 
@@ -51,6 +51,7 @@ xml-defuse picks the reading from the first 4 KiB of the file.
 
 - MHT, when the file starts with MIME headers that name a multipart body, or with a `MIME-Version` header and a markup body such as `text/html`. Each part is decoded from base64 or quoted-printable. Markup parts and CSS parts are read here. Every other part is a file inside the file and goes to the plugins.
 - XML, when the file starts with an XML declaration, its first element declares a namespace, its document type names something other than `html`, or its first element is not one a web page usually starts with.
+- CSS, when the file has no markup or MIME headers at the start and the `name` option ends in `.css` or the `declaredType` option is `text/css`. A style sheet has no signature, so only those say it is one. It is decoded by its byte order mark, then its `@charset` rule, then as UTF-8, as CSS Syntax decodes a sheet, and read with the rules a `style` element gets. The rewrite is UTF-8, and an `@charset` rule that named another encoding names UTF-8 in it.
 - HTML otherwise, and whenever the HTML5 declaration `<!DOCTYPE html>` comes before the first element and no XML declaration comes before it. Text with no markup at all is read as HTML too, since a browser shows it as a page.
 
 XML that is not well-formed is read again as HTML, the way a browser reads a page it was served. XML/MALFORMED reports this when the file said it was XML, by a declaration, a namespace on a first element other than `html`, or its document type. XML/ENCODING does the same for XML in an encoding the XML reading refuses.
@@ -109,7 +110,7 @@ Each finding below has a default action. `strip` removes what the finding names,
 | XML/XINCLUDE | strip | 40 | An XInclude `include` element, with its fallback |
 | XML/MALFORMED | strip | 10 | XML that is not well-formed, read as HTML |
 | XML/ENCODING | strip | 10 | XML the XML reading cannot decode, read as HTML |
-| XML/SCHEMA_LOCATION | strip | 10 | `xsi:schemaLocation`, `xsi:noNamespaceSchemaLocation`, the `schemaLocation` of an XML Schema import or include, and an `xml-model` instruction, at an address that is not relative, unless every target is on www.w3.org. Also an `xml-model` instruction whose pseudo-attributes do not parse |
+| XML/SCHEMA_LOCATION | strip | 10 | `xsi:schemaLocation`, `xsi:noNamespaceSchemaLocation`, the `schemaLocation` of an XML Schema import or include, the `href` of a RELAX NG `externalRef` or `include`, and an `xml-model` instruction, at an address that is not relative, unless every target is on www.w3.org. Also an `xml-model` instruction whose pseudo-attributes do not parse |
 | SCRIPT/ELEMENT | strip | 70 | `script` in HTML, SVG and XHTML, SVG `handler` and XML Events `listener` |
 | SCRIPT/EVENT_HANDLER | strip | 60 | Any `on` attribute of an HTML, SVG or MathML element, and the known handler names on any other element |
 | SCRIPT/URL | strip | 60 | A `javascript:`, `vbscript:`, `livescript:` or `mocha:` URL in a link, a resource, a form action, a refresh or CSS |
@@ -242,7 +243,8 @@ A run that stops before it has seen the whole file rejects it with a null score 
 | `scoreWeights`, `scoreBands` | built in | Change the scoring |
 | `filePlugins` | none | Keep chosen files inside the file |
 | `tempDir` | `os.tmpdir()` | Where temporary files go |
-| `name` | none | The upload's file name. Only the HTML Application check reads it |
+| `name` | none | The upload's file name. The HTML Application check reads it, and a name that ends in `.css` reads a file with no markup at the start as a style sheet |
+| `declaredType` | none | The upload's MIME type. `text/css` reads a file with no markup at the start as a style sheet |
 | `memoryThreshold` | 8 MiB | `disarmXmlSource` keeps its copy of the upload and its output in memory up to this size, and in temporary files above it. Each decoded MHT part above it goes through a temporary file, and the copies plugins rewrote share this much memory |
 
 There is no password option. MHT carries nothing encrypted.
@@ -302,7 +304,7 @@ Before any plugin sees a file, the type check compares its declared type, the ty
 
 xml-defuse fits the contract pdf-defuse describes under The defuse family. A master package builds one router over each package's plugin, puts that router in every package's `filePlugins`, and sends the upload to the router at depth 0.
 
-- `detectXml(bytes, options)` and `detectXmlSource(source, options)` tell a router whether xml-defuse reads a file and in which format: HTML, XHTML, SVG, XSLT, XML or MHT. They read the first 64 KiB and decide the way the inspection picks its reader, by the markup or MIME headers at the start and, for XML, the namespace the root element's start tag declares. They do not claim an Office document saved as XML, or text with no markup at the start. They claim XML in EBCDIC, which the inspection refuses. The full read can still name a file differently. XML that does not parse is read as HTML, and a namespace that an entity spells out is resolved only there. `xmlPlugin` takes what detection finds, and `detectXmlSource` leaves the source open.
+- `detectXml(bytes, options)` and `detectXmlSource(source, options)` tell a router whether xml-defuse reads a file and in which format: HTML, XHTML, SVG, XSLT, XML, MHT or CSS. They read the first 64 KiB and decide the way the inspection picks its reader, by the markup or MIME headers at the start and, for XML, the namespace the root element's start tag declares. They do not claim an Office document saved as XML, or text with no markup at the start, unless the `name` or `declaredType` option says CSS and the text holds no NUL and no signature of a binary format. They claim XML in EBCDIC, which the inspection refuses. The full read can still name a file differently. XML that does not parse is read as HTML, and a namespace that an entity spells out is resolved only there. `xmlPlugin` takes what detection finds, and `detectXmlSource` leaves the source open.
 - The plugin context holds `depth`, the depth of the file itself, and `deadline`, the `Date.now()` value the whole upload must finish by. `xmlPlugin` runs a file at the depth in its context and checks `limits.nestingDepth` against it.
 - Findings are `DefuseFinding` objects, with `category` and `detail` as plain strings. `xmlPlugin` sets `weight` on every finding it returns, from the run's weights, so a container in another package can score them.
 - `code: 'DEFUSE_LIMIT'` with `limit: 'time'` or `'nesting'`, and `code: 'DEFUSE_IO'` with the original error in `cause`, stop the whole tree. xml-defuse passes either one up when a plugin throws it, and reports no PLUGIN_FAILED. At depth 0 a limit becomes the LIMIT finding and an I/O error is thrown. An I/O error inside a file at depth 1 or more leaves `xmlPlugin` with the I/O code.

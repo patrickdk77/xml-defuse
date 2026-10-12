@@ -1,6 +1,7 @@
+import { bomOf } from './encoding';
 import { bufferSource } from './io';
 import { NS } from './markup';
-import { isEbcdicXml, isOfficeXml, type MarkupSniff, sniffMarkup } from './sniff';
+import { extensionOf, isEbcdicXml, isOfficeXml, type MarkupSniff, sniffMarkup, sniffType } from './sniff';
 import type { ByteSource, DetectOptions, FormatDetection, XmlFormat } from './types';
 
 /** The MIME type of each format, as the inspection reports it. */
@@ -11,10 +12,26 @@ export const MIME_TYPES: Record<XmlFormat, string> = {
   xslt: 'application/xslt+xml',
   xml: 'application/xml',
   mht: 'multipart/related',
+  css: 'text/css',
   '': '',
 };
 
-const EXTENSIONS: Record<XmlFormat, string> = { html: 'html', xhtml: 'xhtml', svg: 'svg', xslt: 'xsl', xml: 'xml', mht: 'mht', '': '' };
+const EXTENSIONS: Record<XmlFormat, string> = { html: 'html', xhtml: 'xhtml', svg: 'svg', xslt: 'xsl', xml: 'xml', mht: 'mht', css: 'css', '': '' };
+
+/**
+ * Whether the first bytes are binary: a format the type check knows by its signature, or a NUL byte in text that is
+ * not UTF-16.
+ */
+export function isBinary(head: Uint8Array): boolean {
+  if (sniffType(head.subarray(0, 1024)) !== undefined) return true;
+  const bom = bomOf(head);
+  return bom?.encoding !== 'utf-16le' && bom?.encoding !== 'utf-16be' && head.includes(0);
+}
+
+/** Whether the name or the declared type says CSS, the only way to know a style sheet, which has no signature. */
+export function claimsCss(name?: string, declaredType?: string): boolean {
+  return extensionOf(name) === 'css' || declaredType?.toLowerCase().split(';')[0].trim() === 'text/css';
+}
 
 /** Bytes the inspection reads to decide between XML and HTML, and as much as detection reads. */
 const HEAD = 65536;
@@ -46,18 +63,24 @@ function rootOf(tag: MarkupSniff['rootTag']): { ns: string; local: string; xsltV
 /**
  * Whether xml-defuse reads `source`, and as which format. It is the test the inspection picks its reader by: markup
  * or MIME headers at the start, and for XML the root element's start tag. An Office document saved as XML is
- * office-defuse's, and text with no markup at the start is not markup, so neither is claimed. XML in EBCDIC is claimed
- * as XML, and the inspection refuses it, since xml-defuse does not decode EBCDIC. The full read can
- * still find XML that does not parse and read it as HTML. The name and declared type play no part. The source stays
- * open.
+ * office-defuse's, and text with no markup at the start is not markup, so neither is claimed, except a style sheet
+ * whose name or declared type says CSS. XML in EBCDIC is claimed as XML, and the inspection refuses it, since
+ * xml-defuse does not decode EBCDIC. The full read can still find XML that does not parse and read it as HTML. The
+ * source stays open.
  */
-export async function detectXmlSource(source: ByteSource, _options: DetectOptions = {}): Promise<FormatDetection | undefined> {
+export async function detectXmlSource(source: ByteSource, options: DetectOptions = {}): Promise<FormatDetection | undefined> {
   const size = await source.size();
   const head = await source.read(0, Math.min(size, HEAD));
   // XML in EBCDIC is xml-defuse's to refuse: an XML reader that decodes EBCDIC reads it as XML.
   if (isEbcdicXml(head)) return { mimeType: MIME_TYPES.xml, extension: EXTENSIONS.xml, offset: 0 };
   const sniff = sniffMarkup(head);
-  if (!sniff) return undefined;
+  if (!sniff) {
+    // A style sheet has no signature, so only the name or the declared type says one is, and it must be text.
+    if (claimsCss(options.name, options.declaredType) && !isBinary(head.subarray(0, 4096))) {
+      return { mimeType: MIME_TYPES.css, extension: EXTENSIONS.css, offset: 0, heuristic: 'no markup at the start, and the name or declared type says CSS' };
+    }
+    return undefined;
+  }
   if (sniff.kind === 'xml' && isOfficeXml(head.subarray(0, OFFICE_HEAD))) return undefined;
   const format: XmlFormat = sniff.kind === 'mht' ? 'mht' : sniff.kind === 'html' ? 'html' : formatOfRoot(rootOf(sniff.rootTag));
   return { mimeType: MIME_TYPES[format], extension: EXTENSIONS[format], offset: 0 };

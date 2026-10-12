@@ -39,7 +39,7 @@ export function xmlPlugin(options?: XmlOptions): ContainedFilePlugin {
     accepts: async f => (await detectXmlSource(f.source, { name: f.name, declaredType: f.declaredType })) !== undefined,
     async process(file, sink, context) {
       const run = options ?? (context as RunContext)[RUN_OPTIONS] ?? {};
-      const r = await disarmAtDepth(file.source, sink, run, context.depth, context.deadline, file.name);
+      const r = await disarmAtDepth(file.source, sink, run, context.depth, context.deadline, file.name, file.declaredType);
       // A container in another package scores these by the weights this run used.
       for (const f of [...r.before.findings, ...(r.after?.findings ?? [])]) f.weight = weightOf(f, run);
       const findings = r.before.findings;

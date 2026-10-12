@@ -63,7 +63,17 @@ describe('detectXml', () => {
     expect(await detectXml(Buffer.from('%PDF-1.7\n<html>'))).to.equal(undefined);
   });
 
-  it('goes by content alone, leaves the source open, and lets xmlPlugin take what it finds', async () => {
+  it('claims a style sheet only when the name or the declared type says CSS and the content is text', async () => {
+    const css = { mimeType: 'text/css', extension: 'css', offset: 0, heuristic: 'no markup at the start, and the name or declared type says CSS' };
+    expect(await detectXml(Buffer.from('a { color: red }'), { name: 'a.css' })).to.deep.equal(css);
+    expect(await detectXml(Buffer.from('a { color: red }'), { declaredType: 'TEXT/CSS' })).to.deep.equal(css);
+    expect(await detectXml(Buffer.from('a { color: red }'))).to.equal(undefined);
+    expect(await detectXml(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0]), { name: 'a.css' })).to.equal(undefined);
+    expect(await detectXml(Buffer.from('a {}\0'), { name: 'a.css' })).to.equal(undefined);
+    expect((await detectXml(Buffer.from('<style>a{}</style>'), { name: 'a.css' }))?.mimeType).to.equal('text/html');
+  });
+
+  it('goes by content alone for markup, leaves the source open, and lets xmlPlugin take what it finds', async () => {
     expect(await detectXml(Buffer.from('<p>x</p>'), { name: 'a.pdf', declaredType: 'application/pdf' })).to.deep.equal({ mimeType: 'text/html', extension: 'html', offset: 0 });
     let closed = 0;
     const inner = bufferSource(Buffer.from('<p>x</p>'));

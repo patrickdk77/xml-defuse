@@ -940,7 +940,11 @@ export class Rules implements MarkupHandler {
       if (el.local === 'text') return !this.ctx.findings && this.ctx.memo.xslt.get(this.key(el, ':unescaped')) === 'strip' ? undefined : a;
       return this.report(C.Xslt, D.UnescapedOutput, this.loc(el, a.qname), { element: el.qname }) === 'strip' ? undefined : a;
     }
-    const schemaHint = (a.ns === NS.xsi && (a.local === 'schemaLocation' || a.local === 'noNamespaceSchemaLocation')) || (el.ns === NS.xsd && a.ns === '' && a.local === 'schemaLocation');
+    // A RELAX NG grammar loads another with the href of externalRef and include, as XML Schema does with schemaLocation.
+    const schemaHint =
+      (a.ns === NS.xsi && (a.local === 'schemaLocation' || a.local === 'noNamespaceSchemaLocation')) ||
+      (el.ns === NS.xsd && a.ns === '' && a.local === 'schemaLocation') ||
+      (el.ns === NS.rng && (el.local === 'externalRef' || el.local === 'include') && a.ns === '' && a.local === 'href');
     if (schemaHint) {
       // xsi:schemaLocation pairs each namespace with a location.
       const words = a.value.trim().split(/\s+/);
