@@ -57,6 +57,8 @@ XML that is not well-formed is read again as HTML, the way a browser reads a pag
 
 Binary content is refused with FORMAT/UNRECOGNIZED. That covers a NUL byte in the first 4 KiB of a file that is not UTF-16, and the signatures of PDF, ZIP, PNG, JPEG, GIF, OLE and executable files.
 
+XML in EBCDIC, which starts with the bytes 4C 6F A7 94 of an XML declaration, is refused with FORMAT/EBCDIC. xml-defuse does not decode EBCDIC, and an XML reader that does would read the file as XML, entities and all, so it is neither text nor a page to read as HTML.
+
 An HTML Application runs with full desktop rights, so it is rejected and never cleaned. FORMAT/HTA reports a file that holds an `hta:application` element, and any file whose name ends in `.hta`. The library calls see a name only when the `name` option gives one. The command-line tool and `xmlPlugin` pass the file's name.
 
 An Office document saved as one XML file, a flat OpenDocument file or a Flat OPC package, is rejected with FORMAT/OFFICE. office-defuse reads those, and `xmlPlugin` does not accept them, so a router hands them to office-defuse.
@@ -95,6 +97,7 @@ Each finding below has a default action. `strip` removes what the finding names,
 | FORMAT/UNREADABLE | reject | 0 | A file the reading failed on in a way it did not expect |
 | FORMAT/HTA | reject | 0 | An HTML Application |
 | FORMAT/OFFICE | reject | 0 | An Office document saved as XML |
+| FORMAT/EBCDIC | reject | 0 | XML in EBCDIC, which xml-defuse does not decode |
 | FORMAT/UTF7 | strip | 30 | A declaration of UTF-7, which older Internet Explorer decodes. The output is UTF-8 whatever the action |
 | FORMAT/AMBIGUOUS_COMMENT | strip | 20 | An XML comment an HTML reader ends in another place, such as `<!-->` |
 | FORMAT/AMBIGUOUS_INSTRUCTION | strip | 20 | An XML processing instruction whose data holds `>` |
@@ -299,6 +302,7 @@ Before any plugin sees a file, the type check compares its declared type, the ty
 
 xml-defuse fits the contract pdf-defuse describes under The defuse family. A master package builds one router over each package's plugin, puts that router in every package's `filePlugins`, and sends the upload to the router at depth 0.
 
+- `detectXml(bytes, options)` and `detectXmlSource(source, options)` tell a router whether xml-defuse reads a file and in which format: HTML, XHTML, SVG, XSLT, XML or MHT. They read the first 64 KiB and decide the way the inspection picks its reader, by the markup or MIME headers at the start and, for XML, the namespace the root element's start tag declares. They do not claim an Office document saved as XML, or text with no markup at the start. They claim XML in EBCDIC, which the inspection refuses. The full read can still name a file differently. XML that does not parse is read as HTML, and a namespace that an entity spells out is resolved only there. `xmlPlugin` takes what detection finds, and `detectXmlSource` leaves the source open.
 - The plugin context holds `depth`, the depth of the file itself, and `deadline`, the `Date.now()` value the whole upload must finish by. `xmlPlugin` runs a file at the depth in its context and checks `limits.nestingDepth` against it.
 - Findings are `DefuseFinding` objects, with `category` and `detail` as plain strings. `xmlPlugin` sets `weight` on every finding it returns, from the run's weights, so a container in another package can score them.
 - `code: 'DEFUSE_LIMIT'` with `limit: 'time'` or `'nesting'`, and `code: 'DEFUSE_IO'` with the original error in `cause`, stop the whole tree. xml-defuse passes either one up when a plugin throws it, and reports no PLUGIN_FAILED. At depth 0 a limit becomes the LIMIT finding and an I/O error is thrown. An I/O error inside a file at depth 1 or more leaves `xmlPlugin` with the I/O code.

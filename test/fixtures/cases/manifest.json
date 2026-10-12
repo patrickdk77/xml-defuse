@@ -454,6 +454,18 @@
       "status": "rejected"
     }
   },
+  "xml-ebcdic.xml": {
+    "description": "XML in EBCDIC with an external entity, which an XML reader that decodes EBCDIC reads, refused since xml-defuse does not decode it",
+    "inspect": {
+      "status": "rejected",
+      "includes": [
+        "FORMAT/EBCDIC"
+      ]
+    },
+    "disarm": {
+      "status": "rejected"
+    }
+  },
   "office-flat.fodt": {
     "description": "A flat OpenDocument text with a macro, an Office document saved as XML, which office-defuse reads",
     "inspect": {

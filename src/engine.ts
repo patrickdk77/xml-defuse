@@ -1,15 +1,16 @@
 import * as crypto from 'node:crypto';
 import { TextDecoder } from 'node:util';
+import { formatOfRoot, MIME_TYPES } from './detect';
 import { bomOf, decoderFor, encodingFor, isUtf7Label, prescan } from './encoding';
 import { checkTime, isIoError, NestedIoError, NestingLimitError, StopError, stopsTree } from './errors';
 import { FindingFactory } from './findings';
 import { HtmlTokenizer } from './html';
 import { bufferSink, bufferSource, copyToSink, SpillSink, TempDir } from './io';
-import { type MarkupElement, NS } from './markup';
+import type { MarkupElement } from './markup';
 import { contentType, leafParts, type MhtFile, type MhtPart, type PartOutput, readMht, writeMht } from './mht';
 import { type FileDecision, FindingList, LimitText, Memo, Rules, type RunCtx, USE_LIMIT } from './rules';
 import { scoreFindings } from './score';
-import { extensionOf, isOfficeXml, sniffMarkup, sniffType, typeFromName, typesDisagree } from './sniff';
+import { extensionOf, isEbcdicXml, isOfficeXml, sniffMarkup, sniffType, typeFromName, typesDisagree } from './sniff';
 import { HtmlTree } from './tree';
 import {
   type ByteSink,
@@ -74,15 +75,6 @@ interface Expected {
 }
 
 const CHUNK = 65536;
-const MIME_TYPES: Record<XmlFormat, string> = {
-  html: 'text/html',
-  xhtml: 'application/xhtml+xml',
-  svg: 'image/svg+xml',
-  xslt: 'application/xslt+xml',
-  xml: 'application/xml',
-  mht: 'multipart/related',
-  '': '',
-};
 
 /** What one analysis holds open. Whoever starts the run releases it with cleanup(), however the run ends. */
 class Run {
@@ -338,12 +330,7 @@ async function drainJobs(run: Run, ctx: RunCtx): Promise<void> {
 
 /** The format an XML document's root element gives it. */
 function formatOf(ctx: RunCtx): XmlFormat {
-  const r = ctx.root;
-  if (!r) return 'xml';
-  if (r.ns === NS.svg && r.local === 'svg') return 'svg';
-  if ((r.ns === NS.xslt && (r.local === 'stylesheet' || r.local === 'transform')) || r.xsltVersion) return 'xslt';
-  if (r.ns === NS.html) return 'xhtml';
-  return 'xml';
+  return formatOfRoot(ctx.root);
 }
 
 /**
@@ -716,6 +703,8 @@ async function analyze(run: Run, source: ByteSource, name?: string, mode?: 'xml'
     run.check();
     if (name !== undefined && extensionOf(name) === 'hta') findings.push(run.factory.make(C.Format, D.Hta, undefined, { name: name.slice(0, 200) }));
     const head = await src.read(0, Math.min(size, 4096));
+    // An XML reader that decodes EBCDIC reads the file as XML, so it is neither text nor a page to read as HTML.
+    if (isEbcdicXml(head)) throw new StopError(C.Format, D.Ebcdic, 'XML in EBCDIC, which this package does not decode', {});
     const sniff = sniffMarkup(head);
     if (sniff?.kind === 'xml' && isOfficeXml(head)) findings.push(run.factory.make(C.Format, D.Office));
     // Without markup at the start, text is still a page to a browser, which shows it. Binary content is not.

@@ -120,6 +120,14 @@ function headText(head: Uint8Array): string {
 }
 
 /**
+ * Whether the file starts with an XML declaration in EBCDIC, the bytes 4C 6F A7 94 for "<?xm" that the XML
+ * specification's encoding detection names. xml-defuse does not decode EBCDIC.
+ */
+export function isEbcdicXml(head: Uint8Array): boolean {
+  return head.length >= 4 && head[0] === 0x4c && head[1] === 0x6f && head[2] === 0xa7 && head[3] === 0x94;
+}
+
+/**
  * Whether the first bytes name a flat OpenDocument document or a Flat OPC package as the root element: Office documents
  * saved as one XML file, which office-defuse reads. The test is the one office-defuse routes them by.
  */
@@ -179,6 +187,8 @@ export interface MarkupSniff {
   declared: boolean;
   /** The local name of the first element, lowercased, when the bytes reach it. */
   root?: string;
+  /** The first element's start tag as written: its qualified name and the text of its attributes. */
+  rootTag?: { name: string; attributes: string };
   /**
    * The file says it is XML: it has an XML declaration, its first element other than html declares a namespace, or its
    * document type names something other than HTML. A first element HTML does not know says less.
@@ -234,15 +244,16 @@ export function sniffMarkup(head: Uint8Array): MarkupSniff | undefined {
   }
   const tag = /^<([A-Za-z_][^\s/>]*)([^>]*)/.exec(rest);
   const root = tag?.[1].toLowerCase();
-  if (declared) return { kind: 'xml', declared, root, xml: true };
+  const rootTag = tag ? { name: tag[1], attributes: tag[2] } : undefined;
+  if (declared) return { kind: 'xml', declared, root, rootTag, xml: true };
   // Only HTML has this declaration, so it decides whatever the root element says.
-  if (html5) return { kind: 'html', declared, root };
+  if (html5) return { kind: 'html', declared, root, rootTag };
   const xmlDoctype = doctype !== undefined && doctype !== 'html';
-  if (!root) return { kind: xmlDoctype ? 'xml' : 'html', declared, root, xml: xmlDoctype };
+  if (!root) return { kind: xmlDoctype ? 'xml' : 'html', declared, root, rootTag, xml: xmlDoctype };
   // A namespace declaration on the first element marks an XML vocabulary. Without one, an svg or math element is
   // inert as XML and is read as HTML, the only reading in which it does anything.
   // A page written as XHTML and served as HTML often has one on its html element, which says nothing on its own.
-  if (/\sxmlns(:[^\s=]+)?\s*=/.test(tag?.[2] ?? '')) return { kind: 'xml', declared, root, xml: root !== 'html' || xmlDoctype };
-  if (HTML_ROOTS.has(root) || root === 'svg' || root === 'math') return { kind: xmlDoctype ? 'xml' : 'html', declared, root, xml: xmlDoctype };
-  return { kind: 'xml', declared, root, xml: xmlDoctype };
+  if (/\sxmlns(:[^\s=]+)?\s*=/.test(tag?.[2] ?? '')) return { kind: 'xml', declared, root, rootTag, xml: root !== 'html' || xmlDoctype };
+  if (HTML_ROOTS.has(root) || root === 'svg' || root === 'math') return { kind: xmlDoctype ? 'xml' : 'html', declared, root, rootTag, xml: xmlDoctype };
+  return { kind: 'xml', declared, root, rootTag, xml: xmlDoctype };
 }

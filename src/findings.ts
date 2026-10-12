@@ -21,6 +21,7 @@ def(C.Format, D.Unrecognized, 'reject', 0, 'The file is binary content, not HTML
 def(C.Format, D.Unreadable, 'reject', 0, 'The file could not be read');
 def(C.Format, D.Hta, 'reject', 0, 'The file is an HTML Application, which runs with full desktop rights');
 def(C.Format, D.Office, 'reject', 0, 'The file is an Office document saved as XML, which this package does not read');
+def(C.Format, D.Ebcdic, 'reject', 0, 'The file is XML in EBCDIC, which this package does not decode');
 def(C.Format, D.Utf7, 'strip', 30, 'The file declares UTF-7, which older Internet Explorer decodes into markup other readers do not see');
 def(C.Format, D.AmbiguousComment, 'strip', 20, 'A comment that HTML and XML readers end in different places');
 def(C.Format, D.AmbiguousInstruction, 'strip', 20, 'A processing instruction that an HTML reader ends early');

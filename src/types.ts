@@ -25,6 +25,7 @@ export enum XmlDetail {
   Unreadable = 'UNREADABLE',
   Hta = 'HTA',
   Office = 'OFFICE',
+  Ebcdic = 'EBCDIC',
   Utf7 = 'UTF7',
   AmbiguousComment = 'AMBIGUOUS_COMMENT',
   AmbiguousInstruction = 'AMBIGUOUS_INSTRUCTION',
@@ -321,5 +322,34 @@ export interface XmlOptions {
    * temporary files above it. Each decoded MHT part and data: URL above it goes through a temporary file, and the
    * copies plugins scrubbed share this much memory.
    */
+  memoryThreshold?: number;
+}
+
+/**
+ * A file's format as a package of the family finds it, among the formats that package reads. The family's router asks
+ * each package and routes the file by the answers.
+ */
+export interface FormatDetection {
+  /** The format's MIME type, such as text/html. */
+  mimeType: string;
+  /** The format's usual extension, lowercase and without the dot. */
+  extension: string;
+  /** Where the format starts in the file: 0, or the offset of its data when other data comes first. */
+  offset: number;
+  /** Set when the match rests on more than the content, and says what it rests on. */
+  heuristic?: string;
+}
+
+/** What a detect function may know of a file besides its content. */
+export interface DetectOptions {
+  /** The file's name, as the upload or the container that holds it gives it. */
+  name?: string;
+  /** The MIME type the upload or the container declares. */
+  declaredType?: string;
+  /** The Date.now() value detection must finish by, as `PluginContext.deadline`. */
+  deadline?: number;
+  /** Folder for temporary files. Defaults to `os.tmpdir()`. */
+  tempDir?: string;
+  /** Bytes held in memory before a temporary file takes over. */
   memoryThreshold?: number;
 }

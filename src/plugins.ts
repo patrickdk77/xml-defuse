@@ -1,6 +1,7 @@
+import { detectXmlSource } from './detect';
 import { disarmAtDepth, RUN_OPTIONS, type RunContext } from './engine';
 import { weightOf } from './score';
-import { extensionOf, isOfficeXml, sniffMarkup, typeFromName } from './sniff';
+import { extensionOf, typeFromName } from './sniff';
 import type { ContainedFilePlugin, XmlOptions } from './types';
 
 /**
@@ -34,11 +35,8 @@ export function xmlPlugin(options?: XmlOptions): ContainedFilePlugin {
   return {
     kind: 'file',
     name: 'xml',
-    async accepts(f) {
-      const head = await f.source.read(0, Math.min(f.size, 4096));
-      // An Office document saved as XML goes to office-defuse.
-      return sniffMarkup(head) !== undefined && !isOfficeXml(head);
-    },
+    // It takes what detectXml finds: markup or MIME headers at the start, and not an Office document saved as XML.
+    accepts: async f => (await detectXmlSource(f.source, { name: f.name, declaredType: f.declaredType })) !== undefined,
     async process(file, sink, context) {
       const run = options ?? (context as RunContext)[RUN_OPTIONS] ?? {};
       const r = await disarmAtDepth(file.source, sink, run, context.depth, context.deadline, file.name);

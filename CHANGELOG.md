@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.1 - 2026-10-11
+
+- `detectXml` and `detectXmlSource` tell a router whether xml-defuse reads a file and in which format. `xmlPlugin` takes what they find, and decides between XML and HTML on the first 64 KiB, as the inspection does, where it looked at 4 KiB.
+- XML in EBCDIC is refused with the new FORMAT/EBCDIC. It was read as HTML, which an XML reader that decodes EBCDIC does not do.
+
 ## 0.1.0 - 2026-10-11
 
 The first release.

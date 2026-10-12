@@ -28,6 +28,7 @@ const XSI = ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"';
 const EXAMPLES: Record<string, Example> = {
   'FORMAT/UNRECOGNIZED': { input: Buffer.from([0, 1, 2, 0, 0x41]) },
   'FORMAT/HTA': { input: page('<HTA:APPLICATION ID="app"/>') },
+  'FORMAT/EBCDIC': { input: Buffer.from('4c6fa7949340a58599a28996957e7ff14bf07f6f6e4c996e', 'hex') },
   'FORMAT/OFFICE': { input: '<?xml version="1.0"?><office:document xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" office:mimetype="application/vnd.oasis.opendocument.text"/>' },
   'FORMAT/UTF7': { input: '<html><head><meta charset="utf-7"></head><body>+ADw-b+AD4-</body></html>', gone: ['utf-7'], kept: ['charset="utf-8"', '+ADw-b+AD4-'] },
   'FORMAT/AMBIGUOUS_COMMENT': { input: svg('<!--><b>x</b>--><rect/>'), gone: ['<b>x</b>'], kept: ['<rect/>'] },

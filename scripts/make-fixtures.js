@@ -241,6 +241,19 @@ add('html-hta-element.html', 'A page that declares itself an HTML Application', 
 });
 
 add(
+  'xml-ebcdic.xml',
+  'XML in EBCDIC with an external entity, which an XML reader that decodes EBCDIC reads, refused since xml-defuse does not decode it',
+  Buffer.from(
+    '4c6fa7949340a58599a28996957e7ff14bf07f6f6e254c5ac4d6c3e3e8d7c5409940ba4c5ac5d5e3c9e3e840a740e2e8e2e3c5d4407f868993857a61616185a383619781a2a2a6847f6ebb6e254c996e50a75e4c61996e25',
+    'hex',
+  ),
+  {
+    inspect: { status: 'rejected', includes: ['FORMAT/EBCDIC'] },
+    disarm: { status: 'rejected' },
+  },
+);
+
+add(
   'office-flat.fodt',
   'A flat OpenDocument text with a macro, an Office document saved as XML, which office-defuse reads',
   '<?xml version="1.0" encoding="UTF-8"?>\n<office:document xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:script="urn:oasis:names:tc:opendocument:xmlns:script:1.0" office:version="1.3" office:mimetype="application/vnd.oasis.opendocument.text"><office:scripts><office:script script:language="ooo:Basic"/></office:scripts><office:body><office:text/></office:body></office:document>\n',

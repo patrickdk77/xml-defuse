@@ -1,6 +1,6 @@
 {
   "name": "@patrickdk77/xml-defuse",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Sanitize and clean HTML, XHTML, SVG, XML, XSLT and MHT files. Detects and removes scripts, event handlers, javascript: links, external entities and DTDs, XInclude, XSLT extension functions, frames, objects, forms, meta refresh and CSS that runs or loads, scores the risk, and writes a disarmed copy with no runtime dependencies.",
   "license": "MIT",
   "author": "patrickdk77",
