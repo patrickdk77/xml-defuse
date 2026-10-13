@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.3 - 2026-10-13
+
+- xml-defuse now reads an SVG presentation attribute such as `fill` or `stroke` as CSS when its value spells `url(` with a CSS escape, as `u\72l(` does, so a remote `url()` in it is STYLE/REMOTE_URL. Before, it read only a value with `url(` written out.
+
 ## 0.1.2 - 2026-10-12
 
 - A file whose name or declared type says CSS, with no markup at the start, is read as a style sheet with the rules a `style` element gets, and `detectXml` claims it as `text/css`. The new `declaredType` option carries the upload's type, and `xmlPlugin` passes each file's. The rewrite is UTF-8, and an `@charset` rule that named another encoding names UTF-8 in it.

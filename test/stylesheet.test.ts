@@ -55,3 +55,14 @@ describe('RELAX NG', () => {
     expect((await inspectXml(Buffer.from('<r><include href="http://example.net/x"/></r>'))).findings).to.deep.equal([]);
   });
 });
+
+describe('CSS in SVG presentation attributes', () => {
+  it('reads a value that spells url( with a CSS escape, as a CSS reader decodes it', async () => {
+    for (const value of ['u\\72l(https://evil.example/c)', '\\75rl(https://evil.example/d)', 'U\\52 L(https://evil.example/e)']) {
+      const r = await disarmXml(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg"><rect fill="${value}" stroke="red"/></svg>`), { name: 'logo.svg' });
+      expect([value, acted(r.before.findings), text(r)]).to.deep.equal([value, ['STYLE/REMOTE_URL'], '<svg xmlns="http://www.w3.org/2000/svg"><rect stroke="red"/></svg>\n']);
+    }
+    const kept = await disarmXml(Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"><rect fill="url(#g)" stroke="\\72 ed"/></svg>'), { name: 'logo.svg' });
+    expect(text(kept)).to.equal('<svg xmlns="http://www.w3.org/2000/svg"><rect fill="url(#g)" stroke="\\72 ed"/></svg>\n');
+  });
+});

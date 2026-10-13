@@ -1018,7 +1018,8 @@ export class Rules implements MarkupHandler {
       if (URL_ATTRIBUTES.has(lowerLocal) && isScriptScheme(schemeOf(a.value)))
         return this.report(C.Script, D.Url, this.loc(el, a.qname), { element: el.qname, attribute: a.qname, target: clip(a.value, 300) }) === 'strip' ? undefined : a;
     }
-    if (htmlish && /url\s*\(/i.test(a.value)) {
+    // A CSS escape can spell url( out of other letters, as u\72l(, which a CSS reader decodes, so such a value is read too.
+    if (htmlish && /url\s*\(|\\/i.test(a.value)) {
       const v = this.cssValue(el, a, false);
       return v === undefined ? undefined : { ...a, value: v };
     }
