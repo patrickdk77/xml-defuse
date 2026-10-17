@@ -348,6 +348,8 @@ describe('plugins', () => {
         plugin: 'thrower',
       });
       expect(has(r.before, 'EMBEDDED/PLUGIN_FAILED')).to.equal(true);
+      // The plugin did not answer, so the file scores as one no plugin accepts.
+      expect(r.before.score).to.equal(30);
     });
   });
 });

@@ -150,8 +150,9 @@ Each finding below has a default action. `strip` removes what the finding names,
 | EMBEDDED/OBJECT, EMBED, APPLET | strip | 60, 60, 70 | `object` and `applet`, whose tags and parameters go and whose fallback content stays, and `embed` |
 | EMBEDDED/NO_PLUGIN | strip | 30 | A file inside the file that no plugin accepts |
 | EMBEDDED/TYPE_MISMATCH | info | 40 | A file inside whose declared type, name and content disagree |
-| EMBEDDED/PLUGIN_PASSED, PLUGIN_SCRUBBED | info | 20, 10 | A file inside that a plugin kept |
-| EMBEDDED/PLUGIN_FAILED, PLUGIN_REMOVED | strip | 0 | A file inside that a plugin failed on or removed |
+| EMBEDDED/PLUGIN_PASSED, PLUGIN_SCRUBBED | info | 0 | A file inside that a plugin kept. The plugin's findings score it |
+| EMBEDDED/PLUGIN_REMOVED | strip | 0 | A file inside that a plugin removed. The plugin's findings score it |
+| EMBEDDED/PLUGIN_FAILED | strip | 30 | A file inside that a plugin failed on, which weighs what NO_PLUGIN does |
 | SVG/FOREIGN_OBJECT | strip | 20 | `foreignObject` |
 | SVG/USE_EXTERNAL | strip | 30 | A `use` element that copies from a file that is not beside the page, such as one on another site or in a data: URL |
 | SVG/USE_AMPLIFICATION | strip | 40 | `use` elements that copy each other into more than a million elements. Every same-file `use` goes |

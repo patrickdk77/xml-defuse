@@ -152,8 +152,6 @@ interface Analysis {
   plan?: Plan;
 }
 
-const PLUGIN_KEPT = new Set<string>([D.PluginPassed, D.PluginScrubbed]);
-
 /**
  * `incomplete` marks a run that could not inspect the whole file. finish() rejects it without a score, whatever the
  * actions say, because an override can make the finding that stopped it look harmless.
@@ -164,8 +162,9 @@ function finish(findings: DefuseFinding[], options: XmlOptions, incomplete: bool
   const rejected = findings.some(f => f.action === 'reject');
   // In an upload, a plugin rewrite or a metadata strip changes the file, so the output must be written.
   const strippable = findings.some(f => f.action === 'strip' || (!isOutput && (f.detail === D.PluginScrubbed || f.detail === D.Stripped)));
-  // The upload's score leaves out what plugins kept; the output's score counts it.
-  const { score, risk } = scoreFindings(isOutput ? findings : findings.filter(f => !PLUGIN_KEPT.has(f.detail)), options);
+  // What a plugin decided counts at the weights of the plugin's own findings; the PLUGIN_* findings that record its
+  // answer weigh nothing.
+  const { score, risk } = scoreFindings(findings, options);
   return { status: rejected ? 'rejected' : strippable ? 'strippable' : 'clean', score, risk, findings, ...named };
 }
 

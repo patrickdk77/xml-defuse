@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.0 - 2026-10-17
+
+- EMBEDDED/PLUGIN_PASSED and PLUGIN_SCRUBBED weigh 0, in the upload's score and the output's. The output's score counted them at 20 and 10. A file a plugin kept now scores what the plugin found in it.
+- EMBEDDED/PLUGIN_FAILED weighs 30, what EMBEDDED/NO_PLUGIN weighs, since no plugin answered for the file. It weighed 0.
+
 ## 0.1.3 - 2026-10-13
 
 - xml-defuse now reads an SVG presentation attribute such as `fill` or `stroke` as CSS when its value spells `url(` with a CSS escape, as `u\72l(` does, so a remote `url()` in it is STYLE/REMOTE_URL. Before, it read only a value with `url(` written out.

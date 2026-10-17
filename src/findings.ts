@@ -95,9 +95,9 @@ def(
   40,
   'The types of <embedded file "{name}"|an unnamed embedded file> disagree: <its name says {nameType}|its name has no known extension>, <it is declared {declared}|it has no declared type>, and <its content looks like {sniffed}|its content is not recognized>',
 );
-def(C.Embedded, D.PluginPassed, 'info', 20, 'Embedded file kept by plugin <plugin> with nothing removed');
-def(C.Embedded, D.PluginScrubbed, 'info', 10, 'Embedded file cleaned and kept by plugin <plugin>');
-def(C.Embedded, D.PluginFailed, 'strip', 0, 'Plugin <plugin> failed, so the embedded file was removed');
+def(C.Embedded, D.PluginPassed, 'info', 0, 'Embedded file kept by plugin <plugin> with nothing removed');
+def(C.Embedded, D.PluginScrubbed, 'info', 0, 'Embedded file cleaned and kept by plugin <plugin>');
+def(C.Embedded, D.PluginFailed, 'strip', 30, 'Plugin <plugin> failed, so the embedded file was removed');
 def(C.Embedded, D.PluginRemoved, 'strip', 0, 'Embedded file removed by plugin <plugin>');
 // SVG
 def(C.Svg, D.ForeignObject, 'strip', 20, 'An SVG foreignObject holds HTML inside the drawing');
