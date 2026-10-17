@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1 - 2026-10-17
+
+- The CSS reader's method for an escape is `readEscape`, not `escape`. Security scanners match Node's global names in built code. Nothing else changes.
+
 ## 0.2.0 - 2026-10-17
 
 - EMBEDDED/PLUGIN_PASSED and PLUGIN_SCRUBBED weigh 0, in the upload's score and the output's. The output's score counted them at 20 and 10. A file a plugin kept now scores what the plugin found in it.

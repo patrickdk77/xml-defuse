@@ -77,7 +77,7 @@ class Lexer {
   }
 
   /** Consumes an escape after its backslash and returns the character it stands for. */
-  private escape(): string {
+  private readEscape(): string {
     const c = this.at();
     if (c < 0) return '\uFFFD';
     if (isHexCode(c)) {
@@ -108,7 +108,7 @@ class Lexer {
         this.i++;
       } else if (this.validEscape()) {
         this.i++;
-        value += this.escape();
+        value += this.readEscape();
         escaped = true;
       } else return { value, escaped };
     }
@@ -146,7 +146,7 @@ class Lexer {
           else if (e === 0x0a || e === 0x0c || e === 0x0d) this.i += e === 0x0d && this.at(2) === 0x0a ? 3 : 2;
           else {
             this.i++;
-            value += this.escape();
+            value += this.readEscape();
           }
         } else {
           value += s[this.i];
@@ -225,7 +225,7 @@ class Lexer {
       if (c === 0x5c) {
         if (!this.validEscape()) return this.badUrl(start, value);
         this.i++;
-        value += this.escape();
+        value += this.readEscape();
       } else {
         value += this.s[this.i];
         this.i++;
